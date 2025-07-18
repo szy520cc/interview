@@ -9,21 +9,21 @@
 | 指令/关键字 (Key) | 作用 (Purpose) | 格式 (Format) | 示例 (Example) | 与相似指令的区别 (Differences from similar keys) |
 | :--- | :--- | :--- | :--- | :--- |
 | **`version`** (已弃用) | (历史用法) 定义 `docker-compose.yml` 文件的版本。**在 Compose V2 中已不再需要，会被忽略。** | `version: '3.8'` | `version: '3.9'` | 无。现代的 Compose specification 已不再使用此顶级元素。 |
-| **`services`** | 定义所有的服务（容器）。这是 `docker-compose.yml` 的核心和必需部分。 | `services:`\<br\>  `[service_name]:` | `services:`\<br\>  `webapp:`\<br\>    `image: nginx` | 无。所有容器的定义都必须嵌套在 `services` 之下。 |
-| **`networks`** | 定义供服务连接的自定义网络。 | `networks:`\<br\>  `[network_name]:` | `networks:`\<br\>  `my-network:` | 无。用于管理容器间的网络隔离和连接。 |
-| **`volumes`** | 定义命名的卷 (Named Volumes)，用于数据持久化。 | `volumes:`\<br\>  `[volume_name]:` | `volumes:`\<br\>  `db-data:` | 无。用于跨容器生命周期管理持久化数据。 |
-| **`build`** | 指定用于构建服务镜像的 Dockerfile 路径或构建上下文。 | `build: [path]` or `build:`\<br\>  `context: [path]`\<br\>  `dockerfile: [Dockerfile-name]`\<br\>  `args: ...` | `build: .` or `build:`\<br\>  `context: ./backend`\<br\>  `dockerfile: Dockerfile.prod` | **与 `image` 的区别**: `build` 从源代码构建镜像；`image` 直接从 Docker Hub 或其他镜像仓库拉取预构建的镜像。两者在一个服务中通常只使用一个。如果同时存在，`build` 优先，并会使用 `image` 指定的名称和标签来标记构建出的镜像。 |
+| **`services`** | 定义所有的服务（容器）。这是 `docker-compose.yml` 的核心和必需部分。 | `services:`<br>  `[service_name]:` | `services:`<br>  `webapp:`<br>    `image: nginx` | 无。所有容器的定义都必须嵌套在 `services` 之下。 |
+| **`networks`** | 定义供服务连接的自定义网络。 | `networks:`<br>  `[network_name]:` | `networks:`<br>  `my-network:` | 无。用于管理容器间的网络隔离和连接。 |
+| **`volumes`** | 定义命名的卷 (Named Volumes)，用于数据持久化。 | `volumes:`<br>  `[volume_name]:` | `volumes:`<br>  `db-data:` | 无。用于跨容器生命周期管理持久化数据。 |
+| **`build`** | 指定用于构建服务镜像的 Dockerfile 路径或构建上下文。 | `build: [path]` or `build:`<br>  `context: [path]`<br>  `dockerfile: [Dockerfile-name]`<br>  `args: ...` | `build: .` or `build:`<br>  `context: ./backend`<br>  `dockerfile: Dockerfile.prod` | **与 `image` 的区别**: `build` 从源代码构建镜像；`image` 直接从 Docker Hub 或其他镜像仓库拉取预构建的镜像。两者在一个服务中通常只使用一个。如果同时存在，`build` 优先，并会使用 `image` 指定的名称和标签来标记构建出的镜像。 |
 | **`image`** | 指定服务使用的镜像名称和标签。 | `image: [repository]/[image_name]:[tag]` | `image: postgres:14-alpine` | **与 `build` 的区别**: 见上。`image` 用于使用现成的镜像，更快捷方便。 |
-| **`ports`** | 将主机的端口映射到容器的端口。 | `ports:`\<br\>  `- "[HOST_PORT]:[CONTAINER_PORT]"` | `ports:`\<br\>  `- "8080:80"` | **与 `expose` 的区别**: `ports` 会将容器端口发布到主机，允许从外部访问。`expose` 仅在容器间的内部网络中暴露端口，而不发布到主机。 |
-| **`expose`** | 仅在内部网络中暴露端口，供其他服务访问，但不对主机发布。 | `expose:`\<br\>  `- "[CONTAINER_PORT]"` | `expose:`\<br\>  `- "3000"` | **与 `ports` 的区别**: `expose` 不会做端口映射，主要用于服务间通信的声明。 |
-| **`volumes`** (服务内) | 将主机路径或命名卷挂载到容器内。 | `volumes:`\<br\>  `- "[HOST_PATH or NAMED_VOLUME]:[CONTAINER_PATH]"` | `volumes:`\<br\>  `- ./config.json:/app/config.json`\<br\>  `- db-data:/var/lib/mysql` | 无。这是在服务级别定义数据挂载的方式，与顶级的 `volumes` 配合使用。 |
-| **`environment`** | 设置容器内的环境变量。 | `environment:`\<br\>  `- VARIABLE=value`\<br\>or\<br\>  `VARIABLE: value` | `environment:`\<br\>  `DB_USER: user`\<br\>  `DB_PASS: secret` | **与 `env_file` 的区别**: `environment` 直接在 `docker-compose.yml` 文件中定义变量。`env_file` 从一个外部文件（如 `.env`）中读取变量，更利于保密和配置分离。 |
-| **`env_file`** | 从文件中读取环境变量。 | `env_file:`\<br\>  `- [file_path]` | `env_file:`\<br\>  `- ./db.env` | **与 `environment` 的区别**: 见上。两者可以同时使用，`environment` 中定义的变量会覆盖 `env_file` 中的同名变量。 |
-| **`depends_on`** | 定义服务间的启动依赖关系。被依赖的服务会先于当前服务启动。 | `depends_on:`\<br\>  `- [service_name]` | `depends_on:`\<br\>  `- db`\<br\>  `- redis` | **重要区别**: `depends_on` 只保证容器的启动顺序，不保证被依赖的服务内部的应用程序已经准备好接收请求。需要健康检查（`healthcheck`）来确保服务就绪。 |
+| **`ports`** | 将主机的端口映射到容器的端口。 | `ports:`<br>  `- "[HOST_PORT]:[CONTAINER_PORT]"` | `ports:`<br>  `- "8080:80"` | **与 `expose` 的区别**: `ports` 会将容器端口发布到主机，允许从外部访问。`expose` 仅在容器间的内部网络中暴露端口，而不发布到主机。 |
+| **`expose`** | 仅在内部网络中暴露端口，供其他服务访问，但不对主机发布。 | `expose:`<br>  `- "[CONTAINER_PORT]"` | `expose:`<br>  `- "3000"` | **与 `ports` 的区别**: `expose` 不会做端口映射，主要用于服务间通信的声明。 |
+| **`volumes`** (服务内) | 将主机路径或命名卷挂载到容器内。 | `volumes:`<br>  `- "[HOST_PATH or NAMED_VOLUME]:[CONTAINER_PATH]"` | `volumes:`<br>  `- ./config.json:/app/config.json`<br>  `- db-data:/var/lib/mysql` | 无。这是在服务级别定义数据挂载的方式，与顶级的 `volumes` 配合使用。 |
+| **`environment`** | 设置容器内的环境变量。 | `environment:`<br>  `- VARIABLE=value`<br>or<br>  `VARIABLE: value` | `environment:`<br>  `DB_USER: user`<br>  `DB_PASS: secret` | **与 `env_file` 的区别**: `environment` 直接在 `docker-compose.yml` 文件中定义变量。`env_file` 从一个外部文件（如 `.env`）中读取变量，更利于保密和配置分离。 |
+| **`env_file`** | 从文件中读取环境变量。 | `env_file:`<br>  `- [file_path]` | `env_file:`<br>  `- ./db.env` | **与 `environment` 的区别**: 见上。两者可以同时使用，`environment` 中定义的变量会覆盖 `env_file` 中的同名变量。 |
+| **`depends_on`** | 定义服务间的启动依赖关系。被依赖的服务会先于当前服务启动。 | `depends_on:`<br>  `- [service_name]` | `depends_on:`<br>  `- db`<br>  `- redis` | **重要区别**: `depends_on` 只保证容器的启动顺序，不保证被依赖的服务内部的应用程序已经准备好接收请求。需要健康检查（`healthcheck`）来确保服务就绪。 |
 | **`restart`** | 定义容器的重启策略，以应对容器退出的情况。 | `restart: [policy]` | `restart: always` or `restart: on-failure` | 无。常用策略包括 `no`（默认）、`always`（总是重启）、`on-failure`（仅在非零状态退出时重启）、`unless-stopped`（除非手动停止，否则总是重启）。 |
 | **`command`** | 覆盖 Dockerfile 中的默认 `CMD` 指令。 | `command: [command]` or `command: ["executable", "param1"]` | `command: "python app.py"` | **与 `entrypoint` 的区别**: `command` 覆盖 `Dockerfile` 中的 `CMD`。`entrypoint` 覆盖 `Dockerfile` 中的 `ENTRYPOINT`。`command` 的内容可以作为 `entrypoint` 的参数。 |
 | **`entrypoint`** | 覆盖 Dockerfile 中的默认 `ENTRYPOINT` 指令。 | `entrypoint: [command]` or `entrypoint: ["executable", "param1"]` | `entrypoint: /docker-entrypoint.sh` | **与 `command` 的区别**: `entrypoint` 是容器启动时执行的主命令，而 `command` 通常作为其参数。修改 `entrypoint` 的场景比 `command` 少。 |
-| **`healthcheck`** | 定义如何检查服务（容器）是否“健康”。`depends_on` 可以结合 `healthcheck` 来等待服务真正可用。 | `healthcheck:`\<br\>  `test: ["CMD", "curl", "-f", "http://localhost"]`\<br\>  `interval: 1m30s`\<br\>  `timeout: 10s`\<br\>  `retries: 3` | `healthcheck:`\<br\>  `test: ["CMD-SHELL", "pg_isready -U postgres"]`\<br\>  `interval: 5s` | 无。这是实现可靠服务依赖关系的关键。 |
+| **`healthcheck`** | 定义如何检查服务（容器）是否“健康”。`depends_on` 可以结合 `healthcheck` 来等待服务真正可用。 | `healthcheck:`<br>  `test: ["CMD", "curl", "-f", "http://localhost"]`<br>  `interval: 1m30s`<br>  `timeout: 10s`<br>  `retries: 3` | `healthcheck:`<br>  `test: ["CMD-SHELL", "pg_isready -U postgres"]`<br>  `interval: 5s` | 无。这是实现可靠服务依赖关系的关键。 |
 
 -----
 
