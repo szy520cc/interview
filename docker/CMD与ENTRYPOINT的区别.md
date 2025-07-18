@@ -37,7 +37,7 @@
 **场景2: `docker run` 带参数**
 - `Dockerfile`: `ENTRYPOINT ["/bin/echo", "Hello"]`
 - `docker run <image> World`
-- **结果**: `World` 作为参数追加到 `ENTRYPOINT` 后面，��器执行 `/bin/echo Hello World`，输出 `Hello World`。
+- **结果**: `World` 作为参数追加到 `ENTRYPOINT` 后面，容器执行 `/bin/echo Hello World`，输出 `Hello World`。
 
 ### `CMD` 和 `ENTRYPOINT` 结合使用
 
