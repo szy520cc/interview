@@ -246,13 +246,21 @@ UPDATE products SET stock = stock - 1 WHERE id = 50;
 ```
 
 **优化方案**：  
-确保按照主键顺序进行更新：
+在应用层确保更新操作始终按照固定的主键顺序进行，以避免循环等待。例如，总是先更新ID较小的记录，再更新ID较大的记录。
 
-```sql
-UPDATE products
-SET stock = stock - 1
-WHERE id IN (50, 100)
-ORDER BY id;
+**示例代码（应用层逻辑）**：
+```php
+// 假设要更新的id为[100, 50]
+$ids = [100, 50];
+// 排序以保证更新顺序
+sort($ids); // [50, 100]
+
+$pdo->beginTransaction();
+foreach ($ids as $id) {
+    $stmt = $pdo->prepare("UPDATE products SET stock = stock - 1 WHERE id = ?");
+    $stmt->execute([$id]);
+}
+$pdo->commit();
 ```
 
 ---
